@@ -48,7 +48,7 @@
                     <tbody>
                         @forelse ($laundryMember as $index => $laundryMember)
                         <tr>
-                            <td>{{$laundryMemeber->no_transaksi}}</td>
+                            <td>{{$laundryMember->no_transaksi}}</td>
                             <td>{{$laundryMember->tgl_transaksi}}</td>
                             <td>{{$laundryMember->id_pegawai}}</td>
                             <td>{{$laundryMember->keterangan}}</td>

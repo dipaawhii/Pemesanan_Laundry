@@ -69,7 +69,7 @@
         <form action="{{route('laundryMember.store')}}" method="POST">
         @csrf
           <label for="fname">No Transaksi</label>
-          <input type="number" id="fname" name="no_transaksi" placeholder=" Masukkan Nomor Tranaksi">
+          <input type="number" id="fname" name="no_transaksi" placeholder=" Masukkan Nomor Transaksi">
       
           <label for="lname">Tanggal Transaksi</label>
           <input type="date" id="lname" name="tgl_transaksi" placeholder="Masukkan Tanggal Transaksi">
