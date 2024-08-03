@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('datalaundrynonmember', function (Blueprint $table) {
-            $table->unsignedBigInteger('no_transaksi')->unique();
+            $table->unsignedBigInteger('no_transaksi')->autoIncrement()->unique();
             $table->date('tgl_transaksi');
             $table->string('nama_customer');
             $table->text('alamat_customer');
@@ -20,8 +20,8 @@ return new class extends Migration
             $table->unsignedBigInteger('id_pegawai');
             $table->foreign('id_pegawai')->references('id_pegawai')->on('pegawai');
             $table->text('keterangan');
-            $table->enum('status_laundry', ['menunggu', 'diproses','selesai']);
-            $table->enum('status_pembayaran', ['bayar', 'belum']);
+            $table->enum('status_laundry', ['Menunggu', 'Diproses', 'Selesai']);
+            $table->enum('status_pembayaran', ['Bayar', 'Belum']);
             $table->text('lokasi_kirim');
             $table->timestamps();
         });

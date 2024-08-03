@@ -2,36 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\laundryMember;
+use App\Models\LaundryMember;
+use App\Models\Member;
+use App\Models\Pegawai;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-class laundryMemberController extends Controller
+class LaundryMemberController extends Controller
 {
-    public function index(): View {
-        $laundryMember = laundryMember::latest()->paginate(10);
-        return view('laundryMember.index', compact('laundryMember'));
+    public function index(): View
+    {
+        $laundry_member = DB::table('datalaundrymember')
+            ->join('member', 'member.member_id', '=', 'datalaundrymember.member_id')
+            ->join('pegawai', 'pegawai.id_pegawai', '=', 'datalaundrymember.id_pegawai')
+            ->select('member.nama_member', 'pegawai.nama_pegawai', 'datalaundrymember.*')
+            ->get();
+        return view('levelAdmin.laundryMember.index', compact('laundry_member'));
     }
 
-    public function create(): View{
-        return view('laundryMember.create');
+    public function create(): View
+    {
+        $member = Member::all();
+        $pegawai = DB::table('pegawai')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->where('users.level', 'Karyawan')
+            ->select('pegawai.id_pegawai', 'pegawai.nama_pegawai')
+            ->get();
+        return view('levelAdmin.laundryMember.create', compact('member', 'pegawai'));
     }
 
-    public function store(Request $request): RedirectResponse{
+    public function store(Request $request): RedirectResponse
+    {
         $request->validate([
-            'no_transaksi' => 'required|unique:datalaundrymember,no_transaksi',
             'tgl_transaksi' => 'required',
-            'member_id' => 'required|exists:member,member_id',
-            'id_pegawai' => 'required|exists:pegawai,id_pegawai',
+            'member_id' => 'required',
+            'id_pegawai' => 'required',
             'keterangan' => 'required',
             'status_laundry' => 'required',
             'status_pembayaran' => 'required',
             'lokasi_kirim' => 'required',
         ]);
 
-        laundryMember::create([
-            'no_transaksi' => $request->no_transaksi ,
+        LaundryMember::create([
             'tgl_transaksi' => $request->tgl_transaksi,
             'member_id' => $request->member_id,
             'id_pegawai' => $request->id_pegawai,
@@ -40,32 +54,44 @@ class laundryMemberController extends Controller
             'status_pembayaran' => $request->status_pembayaran,
             'lokasi_kirim' => $request->lokasi_kirim,
         ]);
-        return redirect()->route('laundryMember.index')->with(['success'=>'Data Berhasil Ditambahkan']);
+        return redirect()->route('admin.laundry_member.index')->with(['success' => 'Data Berhasil Ditambahkan']);
     }
-    public function show(string $id): View{
-        $laundryMember = laundryMember::findOrFail($id);
-        return view('laundryMember.show', compact('laundryMember'));
+    public function show(string $id): View
+    {
+        $laundry_member = DB::table('datalaundrymember')
+            ->join('member', 'member.member_id', '=', 'datalaundrymember.member_id')
+            ->join('pegawai', 'pegawai.id_pegawai', '=', 'datalaundrymember.id_pegawai')
+            ->select('member.nama_member', 'pegawai.nama_pegawai', 'datalaundrymember.*')
+            ->where('datalaundrymember.no_transaksi', $id)
+            ->first();
+        return view('levelAdmin.laundryMember.show', compact('laundry_member'));
     }
-    public function edit(string $id): View{
-        $laundryMember = laundryMember::findOrFail($id);
-        return view('laundryMember.edit', compact('laundryMember'));
+    public function edit(string $id): View
+    {
+        $laundry_member = LaundryMember::findOrFail($id);
+        $member = Member::all();
+        $pegawai = DB::table('pegawai')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->where('users.level', 'Karyawan')
+            ->select('pegawai.id_pegawai', 'pegawai.nama_pegawai')
+            ->get();
+        return view('levelAdmin.laundryMember.edit', compact('laundry_member', 'member', 'pegawai'));
     }
-    
-    public function update(Request $request, $id) : RedirectResponse{
+
+    public function update(Request $request, $id): RedirectResponse
+    {
         $request->validate([
-            'no_transaksi' => 'required|unique:datalaundrymember,no_transaksi',
             'tgl_transaksi' => 'required',
-            'member_id' => 'required|exists:member,member_id',
-            'id_pegawai' => 'required|exists:pegawai,id_pegawai',
+            'member_id' => 'required',
+            'id_pegawai' => 'required',
             'keterangan' => 'required',
             'status_laundry' => 'required',
             'status_pembayaran' => 'required',
             'lokasi_kirim' => 'required',
         ]);
 
-        $laundryMember = laundryMember::findOrFail($id);
-        $laundryMember -> update([
-            'no_transaksi' => $request->no_transaksi ,
+        $laundry_member = LaundryMember::findOrFail($id);
+        $laundry_member->update([
             'tgl_transaksi' => $request->tgl_transaksi,
             'member_id' => $request->member_id,
             'id_pegawai' => $request->id_pegawai,
@@ -74,11 +100,12 @@ class laundryMemberController extends Controller
             'status_pembayaran' => $request->status_pembayaran,
             'lokasi_kirim' => $request->lokasi_kirim,
         ]);
-        return redirect()-> route('laundry.index')-> with(['success'=>'Data Berhasil Diedit']);
+        return redirect()->route('admin.laundry_member.index')->with(['success' => 'Data Berhasil Diedit']);
     }
-    public function destroy($id) : RedirectResponse{
-        $laundryMember = laundryMember::findOrFail($id);
-        $laundryMember -> delete();
-        return redirect()-> route('laundryMember.index')-> with(['success'=> 'Data Berhasil Dihapus']);
+    public function destroy($id): RedirectResponse
+    {
+        $laundry_member = LaundryMember::findOrFail($id);
+        $laundry_member->delete();
+        return redirect()->route('admin.laundry_member.index')->with(['success' => 'Data Berhasil Dihapus']);
     }
 }

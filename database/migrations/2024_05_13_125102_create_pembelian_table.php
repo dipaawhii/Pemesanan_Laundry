@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pembelian', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_pembelian');
+            $table->unsignedBigInteger('id_pembelian')->autoIncrement()->unique();
             $table->string('kode_barang')->unique();
             $table->unsignedBigInteger('id_pegawai');
             $table->foreign('id_pegawai')->references('id_pegawai')->on('pegawai');
             $table->date('tanggal');
-            $table->integer('jumlah');
+            $table->unsignedBigInteger('jumlah');
             $table->timestamps();
         });
     }

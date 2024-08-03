@@ -2,74 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\pegawai;
+use App\Models\Pegawai;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PegawaiController extends Controller
 {
-    public function index(): View {
-        $pegawai = pegawai::latest()->paginate(10);
-        return view('pegawai.index', compact('pegawai'));
+    public function index(): View
+    {
+        $pegawai = DB::table('pegawai')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->select('users.email', 'users.level', 'pegawai.*')
+            ->get();
+        return view('levelAdmin.pegawai.index', compact('pegawai'));
     }
 
-    public function create(): View{
-        return view('pegawai.create');
+    public function create(): View
+    {
+        $user = User::whereIn('level', ['Administrator', 'Supervisi', 'Karyawan'])->get();
+        return view('levelAdmin.pegawai.create', compact('user'));
     }
 
-    public function store(Request $request): RedirectResponse{
+    public function store(Request $request): RedirectResponse
+    {
         $request->validate([
-            'id_pegawai' => 'required|unique:pegawai,id_pegawai',
+            'user_id' => 'required',
             'nama_pegawai' => 'required',
-            'password' => 'required',
             'alamat' => 'required',
-            'jabatan' => 'required',
+            'no_hp' => 'required',
         ]);
 
         pegawai::create([
-            'id_pegawai' => $request->id_pegawai,
+            'user_id' => $request->user_id,
             'nama_pegawai' => $request->nama_pegawai,
-            'password' => $request->password,
             'alamat' => $request->alamat,
-            'jabatan' => $request->jabatan,
+            'no_hp' => $request->no_hp,
         ]);
-        return redirect()->route('pegawai.index')->with(['success'=>'Data Berhasil Ditambahkan']);
+        return redirect()->route('admin.pegawai.index')->with(['success' => 'Data Berhasil Ditambahkan']);
     }
 
-    public function show(string $id): View{
-        $pegawai = pegawai::findOrFail($id);
-        return view('pegawai.show', compact('pegawai'));
+    public function show(string $id): View
+    {
+        $pegawai = DB::table('pegawai')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->select('users.email', 'users.level', 'pegawai.*')
+            ->where('pegawai.id_pegawai', $id)
+            ->first();
+        return view('levelAdmin.pegawai.show', compact('pegawai'));
     }
 
-    public function edit(string $id): View{
-        $pegawai = pegawai::findOrFail($id);
-        return view('pegawai.edit', compact('pegawai'));
+    public function edit(string $id): View
+    {
+        $pegawai = Pegawai::findOrFail($id);
+        $user = User::where('level', ['Administrator', 'Supervisi', 'Karyawan'])->get();
+        return view('levelAdmin.pegawai.edit',  compact('pegawai', 'user'));
     }
-    
-    public function update(Request $request, $id) : RedirectResponse{
+
+    public function update(Request $request, $id): RedirectResponse
+    {
         $request->validate([
-            'id_pegawai' => 'required',
             'nama_pegawai' => 'required',
-            'password' => 'required',
             'alamat' => 'required',
-            'jabatan' => 'required',
+            'no_hp' => 'required',
         ]);
 
-        $pegawai = pegawai::findOrFail($id);
-        $pegawai -> update([
-            'id_pegawai' => $request->id_pegawai,
+        $pegawai = Pegawai::findOrFail($id);
+        $pegawai->update([
             'nama_pegawai' => $request->nama_pegawai,
-            'password'=> $request->password,
-            'alamat'=> $request->alamat,
-            'jabatan'=> $request->jabatan,
+            'alamat' => $request->alamat,
+            'no_hp' => $request->no_hp,
         ]);
-        return redirect()-> route('pegawai.index')-> with(['success'=>'Data Berhasil Diedit']);
+        return redirect()->route('admin.pegawai.index')->with(['success' => 'Data Berhasil Diedit']);
     }
 
-    public function destroy($id) : RedirectResponse{
-        $pegawai = pegawai::findOrFail($id);
-        $pegawai -> delete();
-        return redirect()-> route('pegawai.index')-> with(['success'=> 'Data Berhasil Dihapus']);
+    public function destroy($id): RedirectResponse
+    {
+        $pegawai = Pegawai::findOrFail($id);
+        $pegawai->delete();
+        return redirect()->route('admin.pegawai.index')->with(['success' => 'Data Berhasil Dihapus']);
     }
 }

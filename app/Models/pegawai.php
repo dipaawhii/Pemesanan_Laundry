@@ -11,11 +11,11 @@ class pegawai extends Model
 
     protected $table = 'pegawai';
     protected $fillable = [
+        'user_id',
         'id_pegawai',
         'nama_pegawai',
-        'password',
         'alamat',
-        'jabatan',
+        'no_hp',
     ];
 
     protected $primaryKey = 'id_pegawai';

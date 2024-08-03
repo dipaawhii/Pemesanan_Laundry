@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('member', function (Blueprint $table) {
-            $table->unsignedBigInteger('member_id');
+            $table->unsignedBigInteger('member_id')->autoIncrement()->unique();
             $table->string('no_identitas')->unique();
-            $table->string('password');
+            $table->string('nama_member');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->text('alamat');
             $table->string('no_hp');
             $table->date('tgl_join');
-            $table->index('member_id');
             $table->timestamps();
         });
     }

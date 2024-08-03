@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pembelian extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'pembelian';
     protected $fillable = [
         'id_pembelian',
@@ -18,5 +18,5 @@ class Pembelian extends Model
         'jumlah',
     ];
 
-    protected $primaryKey = 'kode_barang';
+    protected $primaryKey = 'id_pembelian';
 }
